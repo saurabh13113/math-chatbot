@@ -1,5 +1,4 @@
-import {NextResponse} from 'next/server' // Import NextResponse from Next.js for handling responses
-import OpenAI from 'openai' // Import OpenAI library for interacting with the OpenAI API
+import { NextResponse } from 'next/server' // Import NextResponse from Next.js for handling responses
 
 // System prompt for the AI, providing guidelines on how to respond to users
 const systemPrompt = "Role: You are MatherBot, a supportive and knowledgeable math assistant designed to help students practice math and solve problems effectively. Your goal is to create an engaging and educational environment where students can learn and improve their math skills. \
@@ -14,14 +13,22 @@ Adaptability: Adjust your explanations and the level of difficulty of problems b
 
 // POST function to handle incoming requests
 export async function POST(req) {
-  const openai = new OpenAI() // Create a new instance of the OpenAI client
   const data = await req.json() // Parse the JSON body of the incoming request
 
-  // Create a chat completion request to the OpenAI API
-  const completion = await openai.chat.completions.create({
-    messages: [{role: 'system', content: systemPrompt}, ...data], // Include the system prompt and user messages
-    model: 'davinci-002', // Specify the model to use
-    stream: true, // Enable streaming responses
+  // Create a chat completion request to the OpenRouter API
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`, // Use environment variable for API key
+      "HTTP-Referer": `${process.env.SITE_URL}`, // Optional, use your site URL
+      "X-Title": `${process.env.SITE_NAME}`, // Optional, use your site name
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      "model": "meta-llama/llama-3.1-8b-instruct:free", // Specify the Meta LLaMA model
+      "messages": [{ role: 'system', content: systemPrompt }, ...data], // Include the system prompt and user messages
+      "stream": true, // Enable streaming responses
+    })
   })
 
   // Create a ReadableStream to handle the streaming response
@@ -29,13 +36,12 @@ export async function POST(req) {
     async start(controller) {
       const encoder = new TextEncoder() // Create a TextEncoder to convert strings to Uint8Array
       try {
-        // Iterate over the streamed chunks of the response
-        for await (const chunk of completion) {
-          const content = chunk.choices[0]?.delta?.content // Extract the content from the chunk
-          if (content) {
-            const text = encoder.encode(content) // Encode the content to Uint8Array
-            controller.enqueue(text) // Enqueue the encoded text to the stream
-          }
+        const reader = response.body.getReader()
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          const text = encoder.encode(new TextDecoder().decode(value)) // Decode and encode the content
+          controller.enqueue(text) // Enqueue the encoded text to the stream
         }
       } catch (err) {
         controller.error(err) // Handle any errors that occur during streaming
