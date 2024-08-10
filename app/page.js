@@ -30,8 +30,6 @@ export default function Home() {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`, // Store your API key in .env.local for Next.js
-          "HTTP-Referer": `${process.env.NEXT_PUBLIC_SITE_URL}`, // Optional, use your site URL
-          "X-Title": `${process.env.NEXT_PUBLIC_SITE_NAME}`, // Optional, use your site name
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
