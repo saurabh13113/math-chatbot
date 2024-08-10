@@ -21,6 +21,8 @@ This repository contains the code for MatherBot, a math assistant chatbot built 
 - **Dark Mode UI**: A modern, dark-themed interface with teal accents for an engaging user experience.
 - **Error Handling**: If there are issues with API communication, users receive appropriate feedback.
 
+  ![image](https://github.com/user-attachments/assets/a21416b2-2409-4f89-9544-79f967c990a4)
+
 ## Deployment and Hosting
 - **Vercel Hosting**: The application is deployed on Vercel, ensuring fast and reliable delivery.
 - **Next.js Optimization**: Server-side rendering and static generation optimize the app for performance and SEO.
