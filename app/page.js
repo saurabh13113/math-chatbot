@@ -13,57 +13,57 @@ export default function Home() {
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-const sendMessage = async () => {
-  if (!message.trim() || isLoading) return;
-  setIsLoading(true);
-
-  const userMessage = message;
-  setMessage('');
-  setMessages((messages) => [
-    ...messages,
-    { role: 'user', content: userMessage },
-    { role: 'assistant', content: '' },
-  ]);
-
-  try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`, // Store your API key in .env.local for Next.js
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "model": "meta-llama/llama-3.1-8b-instruct:free",
-        "messages": [...messages, { role: 'user', content: userMessage }],
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    const assistantResponse = data.choices[0].message.content; // Extract only the assistant's response
-
-    setMessages((messages) => {
-      let lastMessage = messages[messages.length - 1];
-      let otherMessages = messages.slice(0, messages.length - 1);
-      return [
-        ...otherMessages,
-        { ...lastMessage, content: assistantResponse },
-      ];
-    });
-  } catch (error) {
-    console.error('Error:', error);
+  const sendMessage = async () => {
+    if (!message.trim() || isLoading) return;
+    setIsLoading(true);
+  
+    const userMessage = message;
+    setMessage('');
     setMessages((messages) => [
       ...messages,
-      { role: 'assistant', content: "I'm sorry, but I encountered an error. Please try again later." },
+      { role: 'user', content: userMessage },
+      { role: 'assistant', content: '' },
     ]);
+  
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENROUTER_API_KEY}`, // Store your API key in .env.local for Next.js
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "model": "meta-llama/llama-3.1-8b-instruct:free",
+          "messages": [...messages, { role: 'user', content: userMessage }],
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+  
+      const data = await response.json();
+      const assistantResponse = data.choices[0].message.content; // Extract only the assistant's response
+  
+      setMessages((messages) => {
+        let lastMessage = messages[messages.length - 1];
+        let otherMessages = messages.slice(0, messages.length - 1);
+        return [
+          ...otherMessages,
+          { ...lastMessage, content: assistantResponse },
+        ];
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages((messages) => [
+        ...messages,
+        { role: 'assistant', content: "I'm sorry, but I encountered an error. Please try again later." },
+      ]);
+    }
+  
+    setIsLoading(false);
   }
-
-  setIsLoading(false);
-}
-
+  
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
